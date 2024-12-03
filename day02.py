@@ -12,25 +12,8 @@ def format_input(inp: list[str]):
     return [list(map(int, line.split())) for line in inp]
 
 def is_safe(level):
-    type = None
-    old = 0
-    for i, v in enumerate(level):
-        if i == 0:
-            old = v
-            continue
-        else:
-            if abs(v - old) > 3 or v == old:
-                return False
-            if i == 1:
-                if v < old:
-                    type = 'dec'
-                else:
-                    type = 'inc'
-            else:
-                if v > old and type == 'dec' or v < old and type == 'inc':
-                    return False
-        old = v
-    return True
+    diffs = [level[i] - level[i-1] for i in range(1, len(level))]
+    return all(d in (1, 2, 3) for d in diffs) or all(d in (-1, -2, -3) for d in diffs)
 
 def solve(inp, part, example):
     s = 0
