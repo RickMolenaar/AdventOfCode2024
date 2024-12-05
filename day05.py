@@ -20,32 +20,28 @@ def format_input(inp: list[str]):
             updates.append(list(map(int, line.split(','))))
     return ordering, updates
 
+def sort_update(rules: dict[int, list[int]], update: list[int]) -> list[int]:
+    correct = []
+    update = update[:]
+    while update:
+        v = update.pop(0)
+        for v2 in update:
+            if v in rules[v2]:
+                update.append(v)
+                break
+        else:
+            correct.append(v)
+    return correct
+
 def solve(inp, part, example):
     s = 0
     ordering, updates = inp
     for update in updates:
-        valid = True
-        for i, v in enumerate(update):
-            for v2 in ordering[v]:
-                if v2 in update and update.index(v2) < i:
-                    valid = False
-                    break
-            if not valid:
-                if part == 2:
-                    correct = []
-                    while update:
-                        v = update.pop(0)
-                        for v2 in update:
-                            if v in ordering[v2]:
-                                update.append(v)
-                                break
-                        else:
-                            correct.append(v)
-                    s += correct[len(correct) // 2]
-                break
+        correct = sort_update(ordering, update)
+        if part == 1:
+            s += correct[len(correct) // 2] if update == correct else 0
         else:
-            if part == 1:
-                s += update[len(update) // 2]
+            s += correct[len(correct) // 2] if update != correct else 0
     return s
 
 def main():
