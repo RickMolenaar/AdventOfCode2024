@@ -15,31 +15,36 @@ def format_input(inp: list[str]):
         eqs.append((int(v0), list(map(int, vr.split()))))
     return eqs
 
+part1_solved = {}
+
+def can_solve_equation(result, operands, operators):
+    if operands[0] > result:
+        return False
+    for op in operators:
+        match op:
+            case '+':
+                r = operands[0] + operands[1]
+            case '*':
+                r = operands[0] * operands[1]
+            case '|':
+                r = int(str(operands[0]) + str(operands[1]))
+        if len(operands) == 2:
+            if r == result:
+                return True
+        elif can_solve_equation(result, [r] + operands[2:], operators):
+            return True
+    return False
+
 def solve(inp, part, example):
     s = 0
-    base = 2 if part == 1 else 3
-    operators = '+*|'
     for result, operands in inp:
-        n_ops = len(operands) - 1
-        for comb in range(base**n_ops):
-            ops = []
-            for t in range(n_ops):
-                ops.append(operators[comb % base])
-                comb -= comb % base
-                comb //= base
-            res = operands[0]
-            for i in range(len(ops)):
-                if ops[i] == '+':
-                    res += operands[i+1]
-                elif ops[i] == '*':
-                    res *= operands[i+1]
-                else:
-                    res = int(str(res) + str(operands[i+1]))
-                if res > result:
-                    break
-            if res == result:
-                s += result
-                break
+        if (result, tuple(operands)) in part1_solved:
+            s += result
+            continue
+        if can_solve_equation(result, operands, '*+' if part == 1 else '*|+'):
+            s += result
+            if part == 1:
+                part1_solved[(result, tuple(operands))] = True
     return s
 
 def main():
