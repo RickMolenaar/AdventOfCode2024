@@ -82,9 +82,8 @@ def solve(inp, part, example):
         if id is None:
             i += n
             continue
-        for _ in range(n):
-            s += id * i
-            i += 1
+        s += id * (n * (2 * i + n - 1) // 2)        # Quick sum formula
+        i += n
     return s
 
 def main():
