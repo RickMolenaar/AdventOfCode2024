@@ -15,26 +15,18 @@ def format_input(inp: list[str]):
             grid[x, y] = c
     return grid
 
-def get_area(grid, loc, area = None):
-    if area is None:
-        area = set([loc])
-    plant = grid[loc]
+def get_area(grid: dict, loc: tuple[int, int], to_check: set):
+    area = set([loc])
     for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
         nx, ny = loc[0] + dx, loc[1] + dy
-        if (nx, ny) in area:
-            continue
-        try:
-            if grid[nx, ny] == plant:
-                area.add((nx, ny))
-                area.update(get_area(grid, (nx, ny), area))
-        except KeyError:
-            continue
+        if (nx, ny) in to_check and grid[nx, ny] == grid[loc]:
+            to_check.remove((nx, ny))
+            area.update(get_area(grid, (nx, ny), to_check))
     return area
 
 def get_price(grid, area: set, price_type):
     edges = set()
     for loc in area:
-        plant = grid[loc]
         for dx, dy, dir in [(-1, 0, 'l'), (1, 0, 'r'), (0, -1, 'd'), (0, 1, 'u')]:
             neighbor = (loc[0] + dx, loc[1] + dy)
             if neighbor not in grid or grid[neighbor] != grid[loc]:
@@ -67,16 +59,13 @@ def get_price(grid, area: set, price_type):
     return len(area) * sides
     
 
-def solve(grid, part, example):
+def solve(grid: dict[str], part, example):
     s = 0
-    seen = set()
-    for y in range(max(grid)[1] + 1):
-        for x in range(max(grid)[0] + 1):
-            if (x, y) in seen:
-                continue
-            area = get_area(grid, (x, y))
-            seen.update(set(area))
-            s += get_price(grid, area, 'perimeter' if part == 1 else 'sides')
+    to_check = set(grid.keys())
+    while to_check:
+        x, y = to_check.pop()
+        area = get_area(grid, (x, y), to_check)
+        s += get_price(grid, area, 'perimeter' if part == 1 else 'sides')
     return s
 
 def main():
