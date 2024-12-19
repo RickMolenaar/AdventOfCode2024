@@ -1,5 +1,6 @@
 from collections import defaultdict
 from copy import deepcopy
+from AoCHelpers.optimization import Cache
 
 def parse_input(file = 'day19.txt'):
     with open(file) as f:
@@ -9,40 +10,26 @@ def parse_input(file = 'day19.txt'):
 def parse_example():
     return parse_input('day19example.txt')
 
-max_pattern_length = 0
 def format_input(inp: list[str]):
-    global max_pattern_length
     patterns = defaultdict(list)
     for p in inp[0].split(', '):
         patterns[p[0]].append(p)
     
-    max_pattern_length = max(len(p) for p in patterns)
     designs = inp[2:]
     return patterns, designs
 
-cache = {}
-
+@Cache(key_length = 1)
 def is_possible(design, patterns):
-    if design in cache:
-        return cache[design]
-    if not design:
-        cache[design] = 1
-        return 1
     s = 0
-    if design in patterns[design[0]]:
-        s += 1
     for p in patterns[design[0]]:
         if p == design:
-            continue
-        if design.startswith(p):
+            s += 1
+        elif design.startswith(p):
             s += is_possible(design[len(p):], patterns)
-            
-    cache[design] = s
+
     return s
 
 def solve(inp, part, example):
-    global cache
-    cache = {}
     patterns, designs = inp
     s = 0
     for d in designs:
