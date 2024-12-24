@@ -61,18 +61,11 @@ def get_path(prev_path):
         if block in mapping:
             s += mapping[block]
         else:
-            match s[0]:
-                case '<':
-                    new = 'v<<'
-                    end = '>>^'
-                case 'v':
-                    new = 'v<'
-                    end = '>^'
-                case '>':
-                    new = 'v'
-                    end = '^'
-                case '^':
-                    new = '<'
+            locs = get_locs(block) + [(2, 0)]
+            path = get_path_by_locs(locs, (0, 0))
+            s += path
+            mapping[block] = path
+    return s[:-1]
                 
 
 def get_locs(seq):
@@ -86,23 +79,33 @@ def get_locs(seq):
     locs = [map['A']]
     for c in seq:
         locs.append(map[c])
-        # locs.append(map['A'])
     return locs
 
 def solve(inp, part, example):
-    if part == 2 and not example:
+    if part == 2:
         return
     s = 0
     for id, locs in inp:
         path = get_path_by_locs(locs, (0, 3))
-        # locs = get_locs(path)
-        # # path2 = get_paths(locs1, (0, 0))
-        # # locs2 = get_locs(path2)
+        path = path.replace('>vv', 'vv>')
+        # locs1 = get_locs(path)
+        # path2 = get_path_by_locs(locs1, (0, 0))
+        # path2 = path2.replace('A<vA', 'Av<A')
+        # locs2 = get_locs(path2)
+        # path3 = get_path_by_locs(locs2, (0, 0))
+        # if id in (83, 935):
+        #     print(path)
+        #     print(path2)
+        #     print(path3)
+        #     print()
+        # if not example:
+        #     print(path)
         for robot in range((2 if part == 1 else 1)):
             path = get_path(path)
-        # path3 = get_path_by_locs(locs, (0, 0))
-        if example:
-            print(len(path), id)#.split('A'))
+            # if not example:
+            #     print(path)
+        # # if example and part == 1:
+        # #     print(len(path), id)#.split('A'))
         s += id * len(path)
     return s
 
