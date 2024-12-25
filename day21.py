@@ -1,4 +1,6 @@
+from collections import defaultdict
 from copy import deepcopy
+from AoCHelpers.optimization import Cache
 
 def parse_input(file = 'day21.txt'):
     with open(file) as f:
@@ -34,39 +36,31 @@ def get_path_by_locs(locs, forbidden, debug = False):
         l1, l2 = locs[:2]
         dx, dy = l2[0] - l1[0], l2[1] - l1[1]
         options = []
-        if dx > 0:
-            options.append(('>' * dx, (dx, 0)))
-        elif dx < 0:
+        if dx < 0:
             options.append(('<' * abs(dx), (dx, 0)))
         if dy > 0:
             options.append(('v' * dy, (0, dy)))
-        elif dy < 0:
+        if dy < 0:
             options.append(('^' * abs(dy), (0, dy)))
+        if dx > 0:
+            options.append(('>' * dx, (dx, 0)))
         for key, dir in options:
             nx, ny = l1[0] + dir[0], l1[1] + dir[1]
             if (nx, ny) == l2:
-                # for path in :
                 return key + 'A' + get_path_by_locs(locs[1:], forbidden, debug)
             elif (nx, ny) != forbidden:
-                # for path in :
                 return key + get_path_by_locs([(nx, ny)] + locs[1:], forbidden, debug)
 
-mapping = {
-
-    }
-
-def get_path(prev_path):
-    s = ''
-    for block in prev_path.split('A'):
-        if block in mapping:
-            s += mapping[block]
-        else:
-            locs = get_locs(block) + [(2, 0)]
-            path = get_path_by_locs(locs, (0, 0))
-            s += path
-            mapping[block] = path
-    return s[:-1]
-                
+@Cache(convert_lists = True)
+def find_total_path_length(locs, depth):
+    path = get_path_by_locs(locs, (0,0))
+    if depth == 1:
+        return len(path)
+    locs = get_locs(path)
+    length = 0
+    for l1, l2 in zip(locs, locs[1:]):
+        length += find_total_path_length([l1, l2], depth - 1)
+    return length
 
 def get_locs(seq):
     map = {
@@ -82,31 +76,12 @@ def get_locs(seq):
     return locs
 
 def solve(inp, part, example):
-    if part == 2:
-        return
     s = 0
     for id, locs in inp:
         path = get_path_by_locs(locs, (0, 3))
-        path = path.replace('>vv', 'vv>')
-        # locs1 = get_locs(path)
-        # path2 = get_path_by_locs(locs1, (0, 0))
-        # path2 = path2.replace('A<vA', 'Av<A')
-        # locs2 = get_locs(path2)
-        # path3 = get_path_by_locs(locs2, (0, 0))
-        # if id in (83, 935):
-        #     print(path)
-        #     print(path2)
-        #     print(path3)
-        #     print()
-        # if not example:
-        #     print(path)
-        for robot in range((2 if part == 1 else 1)):
-            path = get_path(path)
-            # if not example:
-            #     print(path)
-        # # if example and part == 1:
-        # #     print(len(path), id)#.split('A'))
-        s += id * len(path)
+        locs = get_locs(path)
+        length = find_total_path_length(locs, 2 if part == 1 else 25)
+        s += id * length
     return s
 
 
